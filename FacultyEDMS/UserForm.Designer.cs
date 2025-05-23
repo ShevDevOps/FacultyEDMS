@@ -41,8 +41,12 @@
             this.ExitButton = new System.Windows.Forms.Button();
             this.InfoBox = new System.Windows.Forms.GroupBox();
             this.HideButton = new System.Windows.Forms.Button();
+            this.DocumentHistoryView = new System.Windows.Forms.DataGridView();
+            this.label2 = new System.Windows.Forms.Label();
+            this.HistoryButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.DocumetsView)).BeginInit();
             this.InfoBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DocumentHistoryView)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -178,11 +182,44 @@
             this.HideButton.Text = "Сховати інформацію";
             this.HideButton.UseVisualStyleBackColor = true;
             // 
+            // DocumentHistoryView
+            // 
+            this.DocumentHistoryView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.DocumentHistoryView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.DocumentHistoryView.Location = new System.Drawing.Point(794, 75);
+            this.DocumentHistoryView.Name = "DocumentHistoryView";
+            this.DocumentHistoryView.Size = new System.Drawing.Size(240, 363);
+            this.DocumentHistoryView.TabIndex = 12;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.label2.Location = new System.Drawing.Point(790, 49);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(96, 20);
+            this.label2.TabIndex = 13;
+            this.label2.Text = "Історія змін";
+            // 
+            // HistoryButton
+            // 
+            this.HistoryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.HistoryButton.Location = new System.Drawing.Point(264, 306);
+            this.HistoryButton.Name = "HistoryButton";
+            this.HistoryButton.Size = new System.Drawing.Size(207, 33);
+            this.HistoryButton.TabIndex = 14;
+            this.HistoryButton.Text = "переглянути історію змін";
+            this.HistoryButton.UseVisualStyleBackColor = true;
+            // 
             // UserForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1042, 450);
+            this.Controls.Add(this.HistoryButton);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.DocumentHistoryView);
             this.Controls.Add(this.InfoBox);
             this.Controls.Add(this.ExitButton);
             this.Controls.Add(this.InfoButton);
@@ -199,6 +236,7 @@
             this.Text = "Особистий кабінет користувача <<USER>>";
             ((System.ComponentModel.ISupportInitialize)(this.DocumetsView)).EndInit();
             this.InfoBox.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.DocumentHistoryView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -219,5 +257,8 @@
         private System.Windows.Forms.Button ExitButton;
         private System.Windows.Forms.GroupBox InfoBox;
         private System.Windows.Forms.Button HideButton;
+        private System.Windows.Forms.DataGridView DocumentHistoryView;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button HistoryButton;
     }
 }
