@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace FacultyEDMS
 {
-    public partial class Form1 : Form
+    public partial class EnterForm : Form
     {
-        public Form1()
+        public EnterForm()
         {
             InitializeComponent();
         }
