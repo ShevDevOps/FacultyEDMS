@@ -196,7 +196,7 @@
             this.Controls.Add(this.DocumetsView);
             this.Controls.Add(this.label1);
             this.Name = "UserForm";
-            this.Text = "UserForm";
+            this.Text = "Особистий кабінет користувача <<USER>>";
             ((System.ComponentModel.ISupportInitialize)(this.DocumetsView)).EndInit();
             this.InfoBox.ResumeLayout(false);
             this.ResumeLayout(false);

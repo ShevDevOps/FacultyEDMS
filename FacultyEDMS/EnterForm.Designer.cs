@@ -82,7 +82,7 @@
             this.Controls.Add(this.EmailBox);
             this.Controls.Add(this.label1);
             this.Name = "EnterForm";
-            this.Text = "Form1";
+            this.Text = "Вхід";
             this.ResumeLayout(false);
             this.PerformLayout();
 
