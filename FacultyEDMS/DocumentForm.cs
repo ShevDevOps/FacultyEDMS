@@ -12,9 +12,11 @@ namespace FacultyEDMS
 {
     public partial class DocumentForm : Form
     {
-        public DocumentForm()
+
+        public DocumentForm(int documentId, bool ReadOnly, int loggedInUserId, int loggedInUserRoleId, string loggedInUserRoleName)
         {
             InitializeComponent();
         }
     }
 }
+    
