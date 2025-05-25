@@ -16,6 +16,10 @@ namespace FacultyEDMS
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            // Check and create DB before running the first form
+            DatabaseSetup.EnsureDatabaseExists();
+
             Application.Run(new EnterForm());
         }
     }
