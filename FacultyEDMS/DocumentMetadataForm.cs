@@ -223,7 +223,7 @@ namespace FacultyEDMS
                     documentId.Value, title, description, documentTypeId, newManagedFilePath, loggedInUserId);
 
                 if (success)
-                {
+                {                    
                     MessageBox.Show("Document metadata updated successfully.");
                     DatabaseHelper.LogAction(loggedInUserId, "Document Metadata Update", $"ID: {documentId.Value}");
                     this.DialogResult = DialogResult.OK;
@@ -240,6 +240,12 @@ namespace FacultyEDMS
                 if (permissions == null || !Convert.ToBoolean(permissions["can_create"]))
                 {
                     MessageBox.Show("You do not have permission to create this type of document.", "Permission Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                {
+                    MessageBox.Show("Оберіть файл для додавання до документа!", "Файл обов'язковий", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -267,7 +273,7 @@ namespace FacultyEDMS
                 if (newDocId > 0)
                 {
                     MessageBox.Show("New document created successfully.");
-                    DatabaseHelper.LogAction(loggedInUserId, "Document Create", $"ID: {newDocId}");
+                    DatabaseHelper.LogAction(loggedInUserId, "Document Create", $"{title}");
                     documentId = newDocId;
                     this.DialogResult = DialogResult.OK;
                     this.Close();
@@ -299,5 +305,7 @@ namespace FacultyEDMS
                 MessageBox.Show("No RTF file attached or document not yet saved.", "Cannot Edit Content", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+
+        
     }
 }

@@ -78,6 +78,7 @@
             this.btnBrowseFile.TabIndex = 3;
             this.btnBrowseFile.Text = "Browse File";
             this.btnBrowseFile.UseVisualStyleBackColor = true;
+           
             // 
             // btnSave
             // 
@@ -87,6 +88,7 @@
             this.btnSave.TabIndex = 3;
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
+            
             // 
             // btnCancel
             // 

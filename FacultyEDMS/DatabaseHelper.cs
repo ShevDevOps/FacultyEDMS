@@ -344,6 +344,22 @@ public static class DatabaseHelper
         }
     }
 
+    //Delete document
+    public static bool DeleteDocument(int docId)
+    {
+        string connectionString = System.Configuration.ConfigurationManager.AppSettings["BaseConnectionString"] +
+                                  "Database=" + System.Configuration.ConfigurationManager.AppSettings["DatabaseName"] + ";";
+        string query = "DELETE FROM documents WHERE id = @docId";
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@docId", docId);
+                connection.Open();
+                return command.ExecuteNonQuery() > 0;
+            }
+        }
+    }
     public static DataTable GetAllDocumentTypes()
     {
         string query = "SELECT id, name FROM documenttypes ORDER BY name;";
@@ -388,8 +404,10 @@ public static class DatabaseHelper
                     MessageBox.Show("Error signing document: " + ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
+
             }
         }
+
     }
 
     public static int CreateDocument(string title, string description, int authorId, int documentTypeId, string filePath)
@@ -488,6 +506,27 @@ public static class DatabaseHelper
         }
         return false;
     }
+
+    //Logs for admin
+    public static DataTable GetAllLogs()
+    {
+        string connectionString = System.Configuration.ConfigurationManager.AppSettings["BaseConnectionString"] +
+                                  "Database=" + System.Configuration.ConfigurationManager.AppSettings["DatabaseName"] + ";";
+        string query = @"SELECT logs.id, users.username, logs.action, logs.target, logs.timestamp
+                     FROM logs
+                     LEFT JOIN users ON logs.userId = users.id
+                     ORDER BY logs.timestamp DESC";
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            using (MySqlDataAdapter adapter = new MySqlDataAdapter(query, connection))
+            {
+                DataTable table = new DataTable();
+                adapter.Fill(table);
+                return table;
+            }
+        }
+    }
+
 
     // Helper to get document permissions for a specific role and document type
     public static DataRow GetDocumentPermissions(int roleId, int documentTypeId)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.IO;
+using System.Security.Cryptography;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 
@@ -75,6 +76,14 @@ namespace FacultyEDMS
             this.Close();
         }
 
+       /* if (DatabaseHelper.SignDocument(docId))
+        {
+            DataRow docInfo = DatabaseHelper.GetDocumentInfo(docId);
+                string docTitle = docInfo != null ? docInfo["title"].ToString() : docId.ToString();
+                DatabaseHelper.LogAction(currentUserId, "Підписання документа", $"ID: {docId} | Назва: {docTitle}");
+            // ... решта коду
+        }
+       */
         private void RedactButton_Click(object sender, EventArgs e)
         {
             if (DocumetsView.SelectedRows.Count > 0)
@@ -129,6 +138,9 @@ namespace FacultyEDMS
                     object result = versionCmd.ExecuteScalar();
                     if (result != null && int.TryParse(result.ToString(), out int prevVersion))
                     {
+                        DataRow docInfo = DatabaseHelper.GetDocumentInfo(docId);
+                        string docTitle = docInfo != null ? docInfo["title"].ToString() : docId.ToString();
+                        DatabaseHelper.LogAction(currentUserId, "Редагування вмісту документа", $"ID: {docId} | Назва: {docTitle}");
                         newVersionNumber = prevVersion + 1;
                     }
                 }
@@ -357,6 +369,60 @@ namespace FacultyEDMS
             {
                 MessageBox.Show("Please select a document.", "No Document Selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (DocumetsView.SelectedRows.Count > 0)
+            {
+                int docId = Convert.ToInt32(DocumetsView.SelectedRows[0].Cells["id"].Value);
+
+                DataRow docInfo = DatabaseHelper.GetDocumentInfo(docId);
+                string docTitle = docInfo != null ? docInfo["title"].ToString() : docId.ToString();
+
+                var confirmResult = MessageBox.Show(
+                    "Ви дійсно бажаєте видалити цей документ? Цю дію не можна скасувати.",
+                    "Підтвердження видалення",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (confirmResult == DialogResult.Yes)
+                {
+                    bool success = DatabaseHelper.DeleteDocument(docId);
+                    if (success)
+                    {
+                        
+                        DatabaseHelper.LogAction(currentUserId, "Видалення документа", $"ID: {docId} | Назва: {docTitle}");
+                        MessageBox.Show("Документ успішно видалено.", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        LoadDocuments();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Не вдалося видалити документ.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Оберіть документ для видалення.", "Документ не вибрано", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+        }
+
+        private void btnLogs_Click(object sender, EventArgs e)
+        {
+            if (currentUserRoleName == "Administrator")
+            {
+                using (var logsForm = new LogsForm())
+                {
+                    logsForm.ShowDialog();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Доступ до журналу дій дозволено лише адміністраторам.", "Відмовлено у доступі", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
         }
     }
 }
