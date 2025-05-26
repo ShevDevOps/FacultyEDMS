@@ -44,6 +44,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.HistoryButton = new System.Windows.Forms.Button();
             this.btnCreateNewDocument = new System.Windows.Forms.Button();
+            this.BrowseFileButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.DocumetsView)).BeginInit();
             this.InfoBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DocumentHistoryView)).BeginInit();
@@ -203,7 +204,7 @@
             // HistoryButton
             // 
             this.HistoryButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.HistoryButton.Location = new System.Drawing.Point(441, 276);
+            this.HistoryButton.Location = new System.Drawing.Point(441, 275);
             this.HistoryButton.Name = "HistoryButton";
             this.HistoryButton.Size = new System.Drawing.Size(207, 33);
             this.HistoryButton.TabIndex = 14;
@@ -213,20 +214,34 @@
             // 
             // btnCreateNewDocument
             // 
-            this.btnCreateNewDocument.Location = new System.Drawing.Point(441, 314);
+            this.btnCreateNewDocument.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.btnCreateNewDocument.Location = new System.Drawing.Point(441, 313);
             this.btnCreateNewDocument.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.btnCreateNewDocument.Name = "btnCreateNewDocument";
             this.btnCreateNewDocument.Size = new System.Drawing.Size(207, 33);
             this.btnCreateNewDocument.TabIndex = 15;
-            this.btnCreateNewDocument.Text = "Create Document";
+            this.btnCreateNewDocument.Text = "Створити документ";
             this.btnCreateNewDocument.UseVisualStyleBackColor = true;
             this.btnCreateNewDocument.Click += new System.EventHandler(this.btnCreateNewDocument_Click);
+            // 
+            // BrowseFileButton
+            // 
+            this.BrowseFileButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.BrowseFileButton.Location = new System.Drawing.Point(441, 350);
+            this.BrowseFileButton.Margin = new System.Windows.Forms.Padding(2);
+            this.BrowseFileButton.Name = "BrowseFileButton";
+            this.BrowseFileButton.Size = new System.Drawing.Size(207, 33);
+            this.BrowseFileButton.TabIndex = 16;
+            this.BrowseFileButton.Text = "Прикріпити файл";
+            this.BrowseFileButton.UseVisualStyleBackColor = true;
+            this.BrowseFileButton.Click += new System.EventHandler(this.BrowseFileButton_Click);
             // 
             // UserForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1139, 450);
+            this.Controls.Add(this.BrowseFileButton);
             this.Controls.Add(this.btnCreateNewDocument);
             this.Controls.Add(this.HistoryButton);
             this.Controls.Add(this.label2);
@@ -270,5 +285,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button HistoryButton;
         private System.Windows.Forms.Button btnCreateNewDocument;
+        private System.Windows.Forms.Button BrowseFileButton;
     }
 }
