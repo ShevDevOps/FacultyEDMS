@@ -80,15 +80,74 @@ namespace FacultyEDMS
             if (DocumetsView.SelectedRows.Count > 0)
             {
                 int docId = Convert.ToInt32(DocumetsView.SelectedRows[0].Cells["id"].Value);
-                DocumentMetadataForm metadataForm = new DocumentMetadataForm(docId, currentUserId, currentUserRoleId, currentUserRoleName);
-                if (metadataForm.ShowDialog() == DialogResult.OK)
+                DataRow docInfo = DatabaseHelper.GetDocumentInfo(docId);
+                if (docInfo != null && !string.IsNullOrEmpty(docInfo["filePath"].ToString()) && File.Exists(docInfo["filePath"].ToString()))
                 {
+                    string filePath = docInfo["filePath"].ToString();
+
+                    // Відкрити файл у стандартній програмі
+                    var process = new System.Diagnostics.Process();
+                    process.StartInfo.FileName = filePath;
+                    process.StartInfo.UseShellExecute = true;
+                    process.Start();
+                    process.WaitForExit(); // Чекаємо, поки користувач закриє файл
+
+                    // Після закриття файлу — діалог для коментаря
+                    using (var summaryForm = new ChangeSummaryForm())
+                    {
+                        if (summaryForm.ShowDialog() == DialogResult.OK && summaryForm.IsChanged)
+                        {
+                            AddDocumentVersion(docId, summaryForm.ChangeSummary, filePath);
+                        }
+                    }
                     LoadDocuments();
+                }
+                else
+                {
+                    MessageBox.Show("No file attached to this document or file not found.", "Cannot Edit", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             else
             {
-                MessageBox.Show("Please select a document to edit its metadata.", "No Document Selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Please select a document to edit.", "No Document Selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void AddDocumentVersion(int docId, string changeSummary, string filePath)
+        {
+            string connectionString = System.Configuration.ConfigurationManager.AppSettings["BaseConnectionString"] +
+                                      "Database=" + System.Configuration.ConfigurationManager.AppSettings["DatabaseName"] + ";";
+
+            int newVersionNumber = 1;
+            string versionQuery = "SELECT IFNULL(MAX(versionNumber), 0) FROM documentversions WHERE document_id = @document_id";
+            using (MySqlConnection versionConn = new MySqlConnection(connectionString))
+            {
+                using (MySqlCommand versionCmd = new MySqlCommand(versionQuery, versionConn))
+                {
+                    versionCmd.Parameters.AddWithValue("@document_id", docId);
+                    versionConn.Open();
+                    object result = versionCmd.ExecuteScalar();
+                    if (result != null && int.TryParse(result.ToString(), out int prevVersion))
+                    {
+                        newVersionNumber = prevVersion + 1;
+                    }
+                }
+            }
+
+            string insertQuery = "INSERT INTO documentversions (document_id, versionNumber, changeSummary, filePath, createdAt, editorId) " +
+                                 "VALUES (@document_id, @versionNumber, @changeSummary, @filePath, NOW(), @editorId)";
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                using (MySqlCommand command = new MySqlCommand(insertQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@document_id", docId);
+                    command.Parameters.AddWithValue("@versionNumber", newVersionNumber);
+                    command.Parameters.AddWithValue("@changeSummary", changeSummary);
+                    command.Parameters.AddWithValue("@filePath", filePath);
+                    command.Parameters.AddWithValue("@editorId", currentUserId);
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
             }
         }
 
@@ -180,6 +239,33 @@ namespace FacultyEDMS
             if (metadataForm.ShowDialog() == DialogResult.OK)
             {
                 LoadDocuments();
+
+                int newDocId = -1;
+                string filePath = "";
+                string connectionString = System.Configuration.ConfigurationManager.AppSettings["BaseConnectionString"] +
+                                          "Database=" + System.Configuration.ConfigurationManager.AppSettings["DatabaseName"] + ";";
+                string query = "SELECT id, filePath FROM documents WHERE authorId = @userId ORDER BY createdAt DESC LIMIT 1";
+                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                {
+                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@userId", currentUserId);
+                        connection.Open();
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                newDocId = Convert.ToInt32(reader["id"]);
+                                filePath = reader["filePath"]?.ToString() ?? "";
+                            }
+                        }
+                    }
+                }
+
+                if (newDocId != -1)
+                {
+                    AddDocumentVersion(newDocId, "Документ створено", filePath);
+                }
             }
         }
 
