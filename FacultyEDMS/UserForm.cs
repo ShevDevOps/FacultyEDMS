@@ -216,13 +216,40 @@ namespace FacultyEDMS
                                 using (MySqlCommand command = new MySqlCommand(query, connection))
                                 {
                                     command.Parameters.AddWithValue("@filePath", managedFilePath);
-                                    command.Parameters.AddWithValue("@userId", currentUserId);
+                                    //command.Parameters.AddWithValue("@userId", currentUserId);
                                     command.Parameters.AddWithValue("@docId", docId);
                                     connection.Open();
                                     success = command.ExecuteNonQuery() > 0;
                                 }
                             }
-
+                            query = "INSERT INTO documentversions (document_id, versionNumber, changeSummary, filePath, createdAt, editorId) VALUES (@document_id, @versionNumber, @changeSummary, @filePath, NOW(), @editorId)";                            using (MySqlConnection connection = new MySqlConnection(connectionString))
+                            {
+                                using (MySqlCommand command = new MySqlCommand(query, connection))
+                                {
+                                    command.Parameters.AddWithValue("@filePath", managedFilePath);
+                                    command.Parameters.AddWithValue("@document_id", docId);
+                                    command.Parameters.AddWithValue("@editorId", currentUserId);
+                                    command.Parameters.AddWithValue("@changeSummary", $"File {fileName} attached to Document");
+                                    int newVersionNumber = 1;
+                                    string versionQuery = "SELECT IFNULL(MAX(versionNumber), 0) FROM documentversions WHERE document_id = @document_id";
+                                    using (MySqlConnection versionConn = new MySqlConnection(connectionString))
+                                    {
+                                        using (MySqlCommand versionCmd = new MySqlCommand(versionQuery, versionConn))
+                                        {
+                                            versionCmd.Parameters.AddWithValue("@document_id", docId);
+                                            versionConn.Open();
+                                            object result = versionCmd.ExecuteScalar();
+                                            if (result != null && int.TryParse(result.ToString(), out int prevVersion))
+                                            {
+                                                newVersionNumber = prevVersion + 1;
+                                            }
+                                        }
+                                    }
+                                    command.Parameters.AddWithValue("@versionNumber", newVersionNumber);
+                                    connection.Open();
+                                    command.ExecuteNonQuery();
+                                }
+                            }
                             if (success)
                             {
                                 MessageBox.Show("File attached successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
