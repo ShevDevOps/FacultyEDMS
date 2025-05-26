@@ -44,7 +44,7 @@ namespace FacultyEDMS
         private void LoadDocuments(string searchTerm = null, string searchBy = null)
         {
             string currentSearchBy = "title";
-            if (radioButton2.Checked) currentSearchBy = "author";
+            if (searchBy != null) currentSearchBy = searchBy;
             DataTable documents = DatabaseHelper.GetDocuments(currentUserId, currentUserRoleId, searchTerm, currentSearchBy, null, null);
             DocumetsView.DataSource = documents;
             DocumetsView.ReadOnly = true;
@@ -61,8 +61,10 @@ namespace FacultyEDMS
         }
 
         private void SearchButton_Click(object sender, EventArgs e)
-        {
-            LoadDocuments(SearchBox.Text);
+        {   
+            if (radioButton1.Checked == true) LoadDocuments(SearchBox.Text, "title");
+            else if (radioButton2.Checked == true) LoadDocuments(SearchBox.Text, "author");
+            else LoadDocuments(SearchBox.Text, null);
         }
 
         private void ExitButton_Click(object sender, EventArgs e)
