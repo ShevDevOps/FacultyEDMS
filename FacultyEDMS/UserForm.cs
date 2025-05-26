@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data;
+using System.IO;
 using System.Windows.Forms;
+using MySql.Data.MySqlClient;
 
 namespace FacultyEDMS
 {
@@ -44,7 +46,7 @@ namespace FacultyEDMS
         private void LoadDocuments(string searchTerm = null, string searchBy = null)
         {
             string currentSearchBy = "title";
-            if (radioButton2.Checked) currentSearchBy = "author";
+            if (searchBy != null) currentSearchBy = searchBy;
             DataTable documents = DatabaseHelper.GetDocuments(currentUserId, currentUserRoleId, searchTerm, currentSearchBy, null, null);
             DocumetsView.DataSource = documents;
             DocumetsView.ReadOnly = true;
@@ -61,8 +63,10 @@ namespace FacultyEDMS
         }
 
         private void SearchButton_Click(object sender, EventArgs e)
-        {
-            LoadDocuments(SearchBox.Text);
+        {   
+            if (radioButton1.Checked == true) LoadDocuments(SearchBox.Text, "title");
+            else if (radioButton2.Checked == true) LoadDocuments(SearchBox.Text, "author");
+            else LoadDocuments(SearchBox.Text, null);
         }
 
         private void ExitButton_Click(object sender, EventArgs e)
@@ -176,6 +180,96 @@ namespace FacultyEDMS
             if (metadataForm.ShowDialog() == DialogResult.OK)
             {
                 LoadDocuments();
+            }
+        }
+
+        private void BrowseFileButton_Click(object sender, EventArgs e)
+        {
+            if (DocumetsView.SelectedRows.Count > 0)
+            {
+                int docId = Convert.ToInt32(DocumetsView.SelectedRows[0].Cells["id"].Value);
+
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
+                {
+                    openFileDialog.Filter = "Document Files (RTF, PDF)|*.rtf;*.pdf|All files (*.*)|*.*";
+                    openFileDialog.Title = "Select a Document File";
+
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        try
+                        {
+                            string selectedFilePath = openFileDialog.FileName;
+                            string fileName = Path.GetFileName(selectedFilePath);
+                            string targetDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Documents");
+                            Directory.CreateDirectory(targetDirectory);
+                            string managedFilePath = Path.Combine(targetDirectory, fileName);
+
+                            File.Copy(selectedFilePath, managedFilePath, true);
+
+                            // Оновлення напряму тут
+                            string connectionString = System.Configuration.ConfigurationManager.AppSettings["BaseConnectionString"] +
+                                                    "Database=" + System.Configuration.ConfigurationManager.AppSettings["DatabaseName"] + ";";
+                            string query = "UPDATE documents SET filePath = @filePath, updatedAt = NOW() WHERE id = @docId";
+                            bool success = false;
+                            using (MySqlConnection connection = new MySqlConnection(connectionString))
+                            {
+                                using (MySqlCommand command = new MySqlCommand(query, connection))
+                                {
+                                    command.Parameters.AddWithValue("@filePath", managedFilePath);
+                                    //command.Parameters.AddWithValue("@userId", currentUserId);
+                                    command.Parameters.AddWithValue("@docId", docId);
+                                    connection.Open();
+                                    success = command.ExecuteNonQuery() > 0;
+                                }
+                            }
+                            query = "INSERT INTO documentversions (document_id, versionNumber, changeSummary, filePath, createdAt, editorId) VALUES (@document_id, @versionNumber, @changeSummary, @filePath, NOW(), @editorId)";                            using (MySqlConnection connection = new MySqlConnection(connectionString))
+                            {
+                                using (MySqlCommand command = new MySqlCommand(query, connection))
+                                {
+                                    command.Parameters.AddWithValue("@filePath", managedFilePath);
+                                    command.Parameters.AddWithValue("@document_id", docId);
+                                    command.Parameters.AddWithValue("@editorId", currentUserId);
+                                    command.Parameters.AddWithValue("@changeSummary", $"File {fileName} attached to Document");
+                                    int newVersionNumber = 1;
+                                    string versionQuery = "SELECT IFNULL(MAX(versionNumber), 0) FROM documentversions WHERE document_id = @document_id";
+                                    using (MySqlConnection versionConn = new MySqlConnection(connectionString))
+                                    {
+                                        using (MySqlCommand versionCmd = new MySqlCommand(versionQuery, versionConn))
+                                        {
+                                            versionCmd.Parameters.AddWithValue("@document_id", docId);
+                                            versionConn.Open();
+                                            object result = versionCmd.ExecuteScalar();
+                                            if (result != null && int.TryParse(result.ToString(), out int prevVersion))
+                                            {
+                                                newVersionNumber = prevVersion + 1;
+                                            }
+                                        }
+                                    }
+                                    command.Parameters.AddWithValue("@versionNumber", newVersionNumber);
+                                    connection.Open();
+                                    command.ExecuteNonQuery();
+                                }
+                            }
+                            if (success)
+                            {
+                                MessageBox.Show("File attached successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                LoadDocuments();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Failed to update file path in database.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Error attaching file: {ex.Message}", "File Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a document.", "No Document Selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
     }
